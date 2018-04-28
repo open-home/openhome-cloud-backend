@@ -29,6 +29,24 @@ export const ecolan = functions.https.onRequest((req, res) => {
   });
 });
 
+export const config = functions.https.onRequest((req, res) => {
+
+  cors(req, res, async () => {
+
+    admin
+      .database()
+      .ref()
+      .child('config')
+      .once('value')
+      .then((data) => {
+
+        res.send(data.val());
+      }).catch((error) => {
+      res.sendStatus(503);
+    });
+  });
+});
+
 export const speechEcolan = functions.https.onRequest((req, res) => {
 
   console.log(JSON.stringify(req.body));

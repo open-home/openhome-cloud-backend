@@ -31,6 +31,20 @@ exports.ecolan = functions.https.onRequest((req, res) => {
         });
     }));
 });
+exports.config = functions.https.onRequest((req, res) => {
+    cors(req, res, () => __awaiter(this, void 0, void 0, function* () {
+        admin
+            .database()
+            .ref()
+            .child('config')
+            .once('value')
+            .then((data) => {
+            res.send(data.val());
+        }).catch((error) => {
+            res.sendStatus(503);
+        });
+    }));
+});
 exports.speechEcolan = functions.https.onRequest((req, res) => {
     console.log(JSON.stringify(req.body));
     const agent = new WebhookClient({ request: req, response: res });
