@@ -45,6 +45,77 @@ exports.config = functions.https.onRequest((req, res) => {
         });
     }));
 });
+exports.thermostat = functions.https.onRequest((req, res) => {
+    cors(req, res, () => __awaiter(this, void 0, void 0, function* () {
+        admin
+            .database()
+            .ref()
+            .child('devices')
+            .orderByChild('type')
+            .equalTo(0)
+            .once('value')
+            .then((data) => {
+            res
+                .status(200)
+                .send(data.val());
+        });
+    }));
+});
+exports.deviceMeta = functions.https.onRequest((req, res) => {
+    cors(req, res, () => __awaiter(this, void 0, void 0, function* () {
+        const payload = req.body;
+        admin
+            .database()
+            .ref()
+            .child('devices').child(payload.guid)
+            .once('value')
+            .then((data) => {
+            let status = false;
+            if (data.val()) {
+                const meta = Object.assign(data.val().meta, payload.meta);
+                admin.database().ref().child('devices').child(payload.guid).update({ meta });
+                status = true;
+            }
+            res
+                .status(200)
+                .send({ status: status });
+        });
+    }));
+});
+exports.deviceSpawn = functions.https.onRequest((req, res) => {
+    cors(req, res, () => __awaiter(this, void 0, void 0, function* () {
+        const payload = req.body;
+        return admin
+            .database()
+            .ref()
+            .child('devices').child(payload.guid)
+            .once('value')
+            .then((data) => {
+            let currentMeta = {};
+            if (data.val()) {
+                currentMeta = data.val().meta;
+            }
+            const obj = {
+                guid: payload.guid,
+                endpoint: payload.endpoint,
+                name: payload.name,
+                meta: Object.assign(currentMeta, payload.meta)
+            };
+            return admin.database().ref().child('devices').child(payload.guid).update(obj).then((data) => {
+                return admin.database().ref().child('devices').child(payload.guid).once('value').then((updData) => {
+                    return res
+                        .status(200)
+                        .send({ status: true, meta: updData.val() });
+                });
+            });
+        }).catch((error) => {
+            console.log(JSON.stringify(error));
+            res
+                .status(200)
+                .send({ status: false });
+        });
+    }));
+});
 exports.speechEcolan = functions.https.onRequest((req, res) => {
     console.log(JSON.stringify(req.body));
     const agent = new WebhookClient({ request: req, response: res });

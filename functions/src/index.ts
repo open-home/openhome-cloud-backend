@@ -47,6 +47,99 @@ export const config = functions.https.onRequest((req, res) => {
   });
 });
 
+export const thermostat = functions.https.onRequest((req, res) => {
+
+  cors(req, res, async () => {
+
+    admin
+      .database()
+      .ref()
+      .child('devices')
+      .orderByChild('type')
+      .equalTo(0)
+      .once('value')
+      .then((data) => {
+
+        res
+          .status(200)
+          .send(data.val());
+      });
+  });
+});
+
+export const deviceMeta = functions.https.onRequest((req, res) => {
+
+  cors(req, res, async () => {
+
+    const payload = req.body;
+
+    admin
+      .database()
+      .ref()
+      .child('devices').child(payload.guid)
+      .once('value')
+      .then((data) => {
+
+        let status = false;
+        if (data.val()) {
+
+          const meta = Object.assign(data.val().meta, payload.meta);
+          admin.database().ref().child('devices').child(payload.guid).update({ meta });
+
+          status = true;
+        }
+
+        res
+          .status(200)
+          .send({ status: status });
+      });
+  });
+});
+
+export const deviceSpawn = functions.https.onRequest((req, res) => {
+
+  cors(req, res, async () => {
+
+    const payload = req.body;
+
+    return admin
+      .database()
+      .ref()
+      .child('devices').child(payload.guid)
+      .once('value')
+      .then((data) => {
+
+        let currentMeta = {};
+
+        if (data.val()) {
+          currentMeta = data.val().meta;
+        }
+
+        const obj = {
+          guid: payload.guid,
+          endpoint: payload.endpoint,
+          name: payload.name,
+          meta: Object.assign(currentMeta, payload.meta)
+        };
+
+        return admin.database().ref().child('devices').child(payload.guid).update(obj).then((data) => {
+
+          return admin.database().ref().child('devices').child(payload.guid).once('value').then((updData) => {
+
+            return res
+              .status(200)
+              .send({ status: true, meta: updData.val() });
+          });
+        });
+      }).catch((error) => {
+        console.log(JSON.stringify(error));
+        res
+          .status(200)
+          .send({ status: false });
+    });
+  });
+});
+
 export const speechEcolan = functions.https.onRequest((req, res) => {
 
   console.log(JSON.stringify(req.body));
