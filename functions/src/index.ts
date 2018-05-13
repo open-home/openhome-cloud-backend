@@ -67,6 +67,24 @@ export const thermostat = functions.https.onRequest((req, res) => {
   });
 });
 
+export const devices = functions.https.onRequest((req, res) => {
+
+  cors(req, res, async () => {
+
+    admin
+      .database()
+      .ref()
+      .child('devices')
+      .once('value')
+      .then((data) => {
+
+        res
+          .status(200)
+          .send(data.val());
+      });
+  });
+});
+
 export const deviceMeta = functions.https.onRequest((req, res) => {
 
   cors(req, res, async () => {
@@ -119,6 +137,7 @@ export const deviceSpawn = functions.https.onRequest((req, res) => {
           guid: payload.guid,
           endpoint: payload.endpoint,
           name: payload.name,
+          offline: payload.offline,
           meta: Object.assign(currentMeta, payload.meta)
         };
 

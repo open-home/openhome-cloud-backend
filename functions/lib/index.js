@@ -61,6 +61,20 @@ exports.thermostat = functions.https.onRequest((req, res) => {
         });
     }));
 });
+exports.devices = functions.https.onRequest((req, res) => {
+    cors(req, res, () => __awaiter(this, void 0, void 0, function* () {
+        admin
+            .database()
+            .ref()
+            .child('devices')
+            .once('value')
+            .then((data) => {
+            res
+                .status(200)
+                .send(data.val());
+        });
+    }));
+});
 exports.deviceMeta = functions.https.onRequest((req, res) => {
     cors(req, res, () => __awaiter(this, void 0, void 0, function* () {
         const payload = req.body;
@@ -99,6 +113,7 @@ exports.deviceSpawn = functions.https.onRequest((req, res) => {
                 guid: payload.guid,
                 endpoint: payload.endpoint,
                 name: payload.name,
+                offline: payload.offline,
                 meta: Object.assign(currentMeta, payload.meta)
             };
             return admin.database().ref().child('devices').child(payload.guid).update(obj).then((data) => {
