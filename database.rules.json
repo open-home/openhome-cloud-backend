@@ -1,6 +1,11 @@
 {
   "rules": {
     ".read": "auth != null",
-    ".write": "auth != null"
+    ".write": "auth != null",
+    "devices": {
+      ".indexOn": [
+        "type"
+      ]
+    }
   }
 }
