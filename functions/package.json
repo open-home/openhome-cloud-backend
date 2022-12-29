@@ -19,7 +19,7 @@
     "moment": "^2.22.1"
   },
   "devDependencies": {
-    "ts-loader": "^4.2.0",
+    "ts-loader": "^9.4.2",
     "tslint-eslint-rules": "^5.1.0",
     "typescript": "^2.5.3"
   },
